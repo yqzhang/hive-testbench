@@ -137,9 +137,9 @@ public class GenTable extends Configured implements Tool {
         FSDataOutputStream out = fs.create(in);
         for(int i = 1; i <= parallel; i++) {
           if(table.equals("all")) {
-            out.writeBytes(String.format("./dsdgen -dir $DIR -force Y -scale %d -parallel %d -child %d\n", scale, parallel, i));
+            out.writeBytes(String.format("cmd.exe /c cd \"dsdgen/tools/\" && dsdgen.exe -dir $DIR -force Y -scale %d -parallel %d -child %d\n", scale, parallel, i));
           } else {
-            out.writeBytes(String.format("./dsdgen -dir $DIR -table %s -force Y -scale %d -parallel %d -child %d\n", table, scale, parallel, i));
+            out.writeBytes(String.format("cmd.exe /c cd \"dsdgen/tools/\" && dsdgen.exe -dir $DIR -table %s -force Y -scale %d -parallel %d -child %d\n", table, scale, parallel, i));
           }
         }
         out.close();
@@ -187,7 +187,10 @@ public class GenTable extends Configured implements Tool {
           }
         }
 
-        Process p = Runtime.getRuntime().exec(cmd, null, new File("dsdgen/tools/"));
+        // Apparently this does not work well on Windows
+        // Process p = Runtime.getRuntime().exec(cmd, null, new File("dsdgen/tools/"));
+        ProcessBuilder builder = new ProcessBuilder(cmd);
+        Process p = builder.start();
         int status = p.waitFor();
         if(status != 0) {
           String err = readToString(p.getErrorStream());
